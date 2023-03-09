@@ -7,6 +7,7 @@ import 'package:aartas_website/urls.dart';
 import 'package:card_stack_widget/card_stack_widget.dart';
 import 'package:card_stack_widget/widget/card_stack_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:provider/provider.dart';
 import 'package:stacked_card_carousel/stacked_card_carousel.dart';
 
@@ -112,12 +113,26 @@ class _DoctorsScreenState extends State<DoctorsScreen> {
               )
             : Container(
                 width: 600,
-                color: buffColor,
-                child: GridView.extent(
-                  maxCrossAxisExtent: 200,
-                  children:
-                      doctors.map((e) => DoctorCard(doctorData: e)).toList(),
+                margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+                child: MasonryGridView.count(
+                  mainAxisSpacing: 8,
+                  crossAxisSpacing: 8,
+                  itemCount: doctors.length,
+                  crossAxisCount: mediaQuery(context).size.width > 1000 ? 6 : 4,
+                  itemBuilder: (_, i) {
+                    return Padding(
+                      padding: EdgeInsets.only(top: i == 1 || i == 3 ? 75 : 0),
+                      child: DoctorCard(
+                        doctorData: doctors[i],
+                      ),
+                    );
+                  },
                 )
+                //  GridView.extent(
+                //   maxCrossAxisExtent: 200,
+                //   children:
+                //       doctors.map((e) => DoctorCard(doctorData: e)).toList(),
+                // )
                 // GridView.builder(
                 //   shrinkWrap: true,
                 //   itemCount: doctors.length,
@@ -158,29 +173,23 @@ class DoctorCard extends StatelessWidget {
         openDialog(context, doctorData);
       },
       child: Container(
-        height: mediaQuery(context).size.width - 32,
-        width: mediaQuery(context).size.width - 32,
+        height: 350,
+        // width: 300,
         clipBehavior: Clip.hardEdge,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(
-            width: 8,
-            color: cadetGreyColor,
-          ),
+          borderRadius: BorderRadius.circular(12),
+          // border: Border.all(
+          //   width: 1,
+          // color: cadetGreyColor,
+          // ),
         ),
-        child: Column(
-          children: <Widget>[
-            Expanded(
-              child: Image(
-                image: NetworkImage(
-                  indexOf != -1
-                      ? "${doctorData.doctorImages![indexOf].image}"
-                      : "$doctorImageUrl/${doctorData.image}",
-                ),
-                fit: BoxFit.cover,
-              ),
-            ),
-          ],
+        child: Image(
+          image: NetworkImage(
+            indexOf != -1
+                ? "${doctorData.doctorImages![indexOf].image}"
+                : "$doctorImageUrl/${doctorData.image}",
+          ),
+          fit: BoxFit.cover,
         ),
       ),
     );
