@@ -1,4 +1,29 @@
+// ignore_for_file: prefer_const_constructors
+
+import 'package:aartas_design_system/aartas_design_system.dart';
+import 'package:aartas_design_system/components/adaptive_widgets/adaptive_button.dart';
+import 'package:aartas_design_system/components/glassmorphism.dart';
+import 'package:aartas_design_system/const.dart';
+import 'package:aartas_design_system/themes_provider.dart';
+import 'package:aartas_website/app_page.dart';
+import 'package:aartas_website/app_page_mockups.dart';
+import 'package:aartas_website/articles_page.dart';
+import 'package:aartas_website/background_video.dart';
+import 'package:aartas_website/designed_for_you_page.dart';
+import 'package:aartas_website/doctor_spotlight_page.dart';
+import 'package:aartas_website/doctors_at_aartas_page.dart';
+import 'package:aartas_website/footer.dart';
+import 'package:aartas_website/gradient_discription.dart';
+import 'package:aartas_website/landing_page.dart';
+import 'package:aartas_website/review_page.dart';
+import 'package:aartas_website/screens/all_doctors_screen.dart';
+import 'package:aartas_website/screens/doctors_screen.dart';
+import 'package:aartas_website/video_scroll_page.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:responsive_builder/responsive_builder.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 void main() {
   runApp(const MyApp());
@@ -7,109 +32,349 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
-        primarySwatch: Colors.blue,
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
-    );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (_) => DocProvider(),
+        ),
+      ],
+      child: AartasApiProvider(
+        child: MaterialApp(
+          theme: lightThemeData(context),
+          home: const HomePage(),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
+  }
+}
+
+class HomePage extends StatefulWidget {
+  const HomePage({
+    super.key,
+  });
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  late ScrollController mainScrollController;
+
+  bool lockMainScroll = false;
+
+  @override
+  void initState() {
+    mainScrollController = ScrollController(
+
+        // initialPage: 8,
+        );
+    mainScrollController.addListener(() {
+      // print(mainScrollController.position.pixels);
+    });
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // print("MainScrollLock: $lockMainScroll");
+    return Scaffold(
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            backgroundColor: Colors.transparent,
+            pinned: true,
+            toolbarHeight: 60,
+            titleSpacing: 0,
+            elevation: 2,
+            shadowColor: themeData(context).colorScheme.background,
+            title: GlassMorphism(
+              color: themeData(context).colorScheme.background,
+              child: Container(
+                padding: EdgeInsets.fromLTRB(
+                  mediaQuery(context).size.width > 700 ? 32 : 16,
+                  0,
+                  0,
+                  0,
+                ),
+                width: mediaQuery(context).size.width,
+                height: 60,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Image(
+                          image: AssetImage("AartasLogo.png"),
+                          height:
+                              mediaQuery(context).size.width > 700 ? 24 : 16,
+                          color: textTheme(context).headlineSmall!.color,
+                        ),
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        AdaptiveButton(
+                          label: "Locations",
+                          bgColor: Colors.transparent,
+                          textColor: textTheme(context).headlineSmall!.color,
+                          onTap: () {
+                            showDialog(
+                              context: context,
+                              builder: (_) => Dialog(
+                                child: Text("Locations"),
+                              ),
+                            );
+                          },
+                        ),
+                        AdaptiveButton(
+                          label: "Doctors",
+                          bgColor: Colors.transparent,
+                          textColor: textTheme(context).headlineSmall!.color,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => AllDoctorsPage(),
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    )
+                  ],
+                ),
+              ),
+            ),
+            bottom: PreferredSize(
+              preferredSize: Size.fromHeight(45),
+              child: InkWell(
+                onTap: () {
+                  showDialog(
+                    context: context,
+                    builder: (_) => Dialog(
+                      child: Text("Download App"),
+                    ),
+                  );
+                },
+                child: Container(
+                  height: 45,
+                  alignment: Alignment.center,
+                  color: burntUmberColor,
+                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "Download the Aartas-Healthcare App",
+                        style: textTheme(context).titleSmall?.copyWith(
+                              fontWeight: FontWeight.w500,
+                              color: seaShellColor,
+                            ),
+                      ),
+                      const SizedBox(width: 8),
+                      Image(
+                        image: AssetImage("apple_logo.png"),
+                        height: textTheme(context).titleSmall!.fontSize,
+                        // color: seaShellColor,
+                      ),
+                      const SizedBox(width: 8),
+                      Image(
+                        image: AssetImage("play_logo.png"),
+                        height: textTheme(context).labelSmall!.fontSize,
+                        // color: seaShellColor,
+                      ),
+                      const SizedBox(width: 8),
+                      Icon(
+                        CupertinoIcons.arrow_right,
+                        size: textTheme(context).titleSmall!.fontSize,
+                        color: seaShellColor,
+                      )
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          SliverList(
+            delegate: SliverChildListDelegate(
+              [
+                LandingPage(
+                  controller: mainScrollController,
+                ),
+                GradientText(
+                  controller: mainScrollController,
+                ),
+                DoctorsAtAartas(
+                  controller: mainScrollController,
+                ),
+                DoctorsSpotlightPage(
+                  controller: mainScrollController,
+                ),
+                DesignedForYou(
+                  controller: mainScrollController,
+                ),
+              ],
+            ),
+          ),
+          VideoScrollPage(
+            controller: mainScrollController,
+            isLock: (isLock) {
+              // print("IsLock: $isLock");
+              lockMainScroll = isLock;
+              setState(() {});
+            },
+          ),
+          SliverList(
+            delegate: SliverChildListDelegate(
+              [
+                ReviewsPage(
+                  controller: mainScrollController,
+                ),
+              ],
+            ),
+          ),
+          AppPage(),
+          SliverList(
+            delegate: SliverChildListDelegate(
+              [
+                AppPageMockups(
+                  controller: mainScrollController,
+                  isLock: (isLock) {
+                    // print("IsLock: $isLock");
+                    lockMainScroll = isLock;
+                    setState(() {});
+                  },
+                ),
+                ArticlesPage(
+                  controller: mainScrollController,
+                ),
+                // Footer(
+                //   controller: mainScrollController,
+                // )
+              ],
+            ),
+          ),
+          // SliverToBoxAdapter(
+          //   child: Column(
+          //     children: [
+
+          //       Container(
+          //         height: mediaQuery(context).size.height,
+          //         width: mediaQuery(context).size.width,
+          //         color: cadetGreyColor,
+          //       ),
+          //     ],
+          //   ),
+          // ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          var url = Uri(scheme: "tel", path: "+919999001040");
+          if (await canLaunchUrl(url)) {
+            await launchUrl(url, mode: LaunchMode.externalApplication);
+          }
+        },
+        child: Icon(
+          CupertinoIcons.phone,
+        ),
+      ),
+    );
+    // return Scaffold(
+    //   body: CustomScrollView(
+    //     controller: mainScrollController,
+    //     slivers: [
+    //       SliverToBoxAdapter(
+    //         child: ScrollTransformView(
+    //           children: [
+    //             // LandingPage(controller: mainScrollController),
+    //             ScrollTransformItem(
+    //               builder: (_) {
+    //                 return GradientText(
+    //                   controller: mainScrollController,
+    //                 );
+    //               },
+    //               offsetBuilder: (scrollOffset) {
+    //                 print(scrollOffset);
+    //                 return Offset(0, -scrollOffset);
+    //               },
+    //             ),
+    //             ScrollTransformItem(
+    //               builder: (_) {
+    //                 return DoctorsSpotlightPage(
+    //                   controller: mainScrollController,
+    //                 );
+    //               },
+    //             ),
+    //             ScrollTransformItem(
+    //               builder: (_) {
+    //                 return DesignedForYou(
+    //                   controller: mainScrollController,
+    //                 );
+    //               },
+    //             ),
+
+    //             // DoctorsAtAartas(controller: mainScrollController),
+    //           ],
+    //         ),
+    //       ),
+    //       SliverAppBar(
+    //         expandedHeight: mediaQuery(context).size.height * 3,
+    //         flexibleSpace: FlexibleSpaceBar(
+    //           background: Container(
+    //             height: mediaQuery(context).size.height * 3,
+    //             width: mediaQuery(context).size.width,
+    //             decoration: BoxDecoration(
+    //               gradient: LinearGradient(
+    //                 begin: Alignment.bottomCenter,
+    //                 end: Alignment.topCenter,
+    //                 colors: [
+    //                   copperRedColor,
+    //                   burntUmberColor,
+    //                 ],
+    //               ),
+    //             ),
+    //             child: BackgroundVideo(
+    //               // mainController: mainScrollController,
+    //               // lockMainScroll: lockMainScroll,
+    //               networkImage:
+    //                   "https://aartas-qaapp-as.azurewebsites.net/public/doctorimage/CliniShareSpaceClipforApp.mp4",
+    //               // onScroll: (val) {
+    //               //   lockMainScroll = val;
+    //               //   setState(() {});
+    //               // },
+    //             ),
+    //           ),
+    //         ),
+    //       ),
+    //     ],
+    //   ),
+    // body: ListView(
+    //   shrinkWrap: true,
+    //   controller: mainScrollController,
+    //   physics: lockMainScroll ? const NeverScrollableScrollPhysics() : null,
+    //   children: [
+    //     const LandingPage(),
+    //     const GradientText(),
+    //     const DoctorsAtAartas(),
+    //     const DoctorsSpotlightPage(),
+    //     const DesignedForYou(),
+    //     Container(
+    //       height: mediaQuery(context).size.height,
+    //       width: mediaQuery(context).size.width,
+    //       color: burntUmberColor,
+    //       alignment: Alignment.center,
+    //       child: Text(
+    //         "Hello, Aartas!",
+    //         style: textTheme(context).displaySmall,
+    //       ),
+    //     ),
+
+    //   ],
+    // ),
+    // );
   }
 }
